@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+
+<!-- This file represents the DJI M600 drone URDF without the Gimbal.
+     This is meant to enable simulating the drone in Gazebo by mimicing the model states and links of the on-board computer.
+     No dynamics is acually simulated since the actual simulation happens in the drone itself.
+-->
+
+<!--Written by Tareq Aziz ALQutami (tareqaziz2010@gmail.com) -->
+
+<robot name="dji_m600" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+
+  <xacro:macro name="dji_m600" params="name:=m600">
+
+    <!-- Drone base link. The name of the link is variable to allow spawning more than one drone -->
+    <link name="${name}_base_link">
+      <inertial>
+        <mass value="10.0" />
+        <inertia ixx="0.01152" ixy="0.0" ixz="0.0" iyy="0.01152" iyz="0.0" izz="0.0218" />
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0.005" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://dji_drone_description/meshes/dji_m600.dae"/>
+        </geometry>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0.005" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://dji_drone_description/meshes/dji_m600.dae"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- Led indication link to identify front of the drone -->
+    <link name="led_link">
+      <inertial>
+        <mass value="0.0010" />
+        <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001" />
+      </inertial>
+      <visual>
+        <origin xyz="0.1 -0.038 0.48" rpy="0 0 0" />    <!--(x,y,z)=(red,green,blue) in GAZEBO  -->
+        <geometry>
+           <box size="0.030 0.030 0.030" />
+        </geometry>
+        <material name="green">
+            <color rgba="0 1 0 1"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0.1 -0.038 0.48" rpy="0 0 0" />
+        <geometry>
+          <box size="0.030 0.030 0.030" />
+        </geometry>
+      </collision>
+    </link>
+    <joint name='led_joint' type='fixed'>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <parent link="${name}_base_link"/>
+      <child link="led_link"/>
+    </joint>
+
+    <!--Gazebo elements -->
+    <!-- reference to gazebo colors -->
+    <gazebo reference="led_link">
+      <material>Gazebo/Green</material>
+    </gazebo>
+
+    <!-- This plugin publishes drone pose with respect to ground in topic ground_truth/state,
+          The topic ground_truth/state can then be published to tf manually or using message_to_tf package -->
+    <gazebo>
+      <plugin name="m600_groundtruth_sim" filename="libgazebo_ros_p3d.so">
+        <updateRate>50.0</updateRate>
+        <bodyName>${name}_base_link</bodyName>
+        <topicName>ground_truth/state</topicName>
+        <gaussianNoise>0.0</gaussianNoise>
+        <frameName>world</frameName>
+      </plugin>
+    </gazebo>
+
+  </xacro:macro>
+
+</robot>

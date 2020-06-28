@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+
+<!-- This file represents the DJI M100 drone URDF without the Gimbal and a VLP-16 Lidar.
+     This is meant to enable simulating the drone in Gazebo by mimicing the model states and links of the on-board computer.
+     No dynamics is acually simulated since the actual simulation happens in the drone itself.
+-->
+
+<!--Written by Tareq Aziz ALQutami (tareqaziz2010@gmail.com) -->
+
+<!-- Dependencies: velodyne_simulator package (http://wiki.ros.org/velodyne_simulator) -->
+
+<robot name="dji_m100" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:arg name="drone_name" default="m100"/>
+  <xacro:arg name="lidar_name" default="velodyne"/>
+
+  <xacro:macro name="m100_lidar_macro">
+
+    <!-- dji m100 drone , base link is $(name)_base_link-->
+    <xacro:include filename="$(find dji_drone_description)/urdf/_dji_m100.urdf.xacro" />
+    <xacro:dji_m100  name="$(arg drone_name)">
+    </xacro:dji_m100>
+
+    <!-- Velodyne VLP-16 LIDAR, requires velodyne_simulator package -->
+    <xacro:if value="$(arg velodyne)">
+      <xacro:include filename="$(find velodyne_description)/urdf/VLP-16.urdf.xacro"/>
+      <xacro:VLP-16  parent="$(arg drone_name)_base_link" name="$(arg lidar_name)"  topic="/velodyne/point_cloud" samples="440" gpu="false">
+        <!-- Transformation from the Mount to the LIDAR visual center -->
+        <origin xyz="0 0 0.22" rpy="0 0 0"/>
+      </xacro:VLP-16 >
+    </xacro:if>
+
+  </xacro:macro>
+
+  <!-- call the macro -->
+  <xacro:m100_lidar_macro />
+
+
+</robot>

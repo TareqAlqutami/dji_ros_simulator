@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+
+<!-- This file represents the DJI M100 drone URDF without the Gimbal and an Intel Realsense D435 depth camera.
+     This is meant to enable simulating the drone in Gazebo by mimicing the model states and links of the on-board computer.
+     No dynamics is acually simulated since the actual simulation happens in the drone itself.
+-->
+
+<!--Written by Tareq Aziz ALQutami (tareqaziz2010@gmail.com) -->
+
+<!-- Dependencies: realsense_description package -->
+
+<robot name="dji_m100" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:arg name="drone_name" default="m100"/>
+  <xacro:arg name="realsense_name" default="realsense"/>
+
+  <xacro:macro name="m100_realsense_macro">
+
+    <!-- dji m100 drone , base link is $(name)_link-->
+    <xacro:include filename="$(find dji_drone_description)/urdf/_dji_m100.urdf.xacro" />
+    <xacro:dji_m100  name="$(arg drone_name)">
+    </xacro:dji_m100>
+
+    <!-- Intel realsense camera pointing forward, requires realsense_description package-->
+    <xacro:include filename="$(find realsense_description)/urdf/realsense_d435.urdf.xacro"/>
+    <xacro:realsense_macro parent="$(arg drone_name)_base_link" name="$(arg realsense_name)">
+      <!-- Calibration transformation from realsense camera axis to its actual pose -->
+      <origin xyz="0 0 0.065" rpy="0 0 0" />
+    </xacro:realsense_macro>
+
+  </xacro:macro>
+
+  <!-- call the macro -->
+  <xacro:m100_realsense_macro />
+
+
+</robot>

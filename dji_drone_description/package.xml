@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package>
+  <name>dji_drone_description</name>
+  <version>0.1.0</version>
+  <description>dji drones description package</description>
+
+  <maintainer email="tareqaziz2010@gmail.com">Tareq ALQutami</maintainer>
+
+  <license>BSD</license>
+
+  <author email="tareqaziz2010@gmail.com">Tareq ALQutami</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+</package>

@@ -1,0 +1,22 @@
+<launch>
+
+    <!-- Drone settings -->
+    <arg name="drone_name" default="m100"/>
+    <arg name="lidar" default="true"/>
+    <arg name="lidar_name" default="veloydyne"/>
+    <arg name="realsense" default="true"/>
+    <arg name="realsense_name" default="realsense"/>
+
+    <!-- send the robot XML to param server -->
+    <param name="robot_description" command="$(find xacro)/xacro $(find dji_drone_description)/urdf/dji_m100_sensors.urdf.xacro
+                                              drone_name:=$(arg drone_name) lidar:=$(arg lidar) lidar_name:=$(arg lidar_name)
+                                              realsense:=$(arg realsense) realsense_name:=$(arg realsense_name)" />
+
+    <!-- start robot state publisher -->
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher"/>
+
+    <!-- RViz -->
+    <arg name="rviz" default="true"/>
+    <node  if="$(arg rviz)" name="rviz" pkg="rviz" type="rviz" args="-d $(find dji_drone_description)/rviz/m100.rviz" />
+
+</launch>

@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+
+<launch>
+  <!-- Gazebo settings -->
+  <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+  <arg name="verbose" default="false"/>
+  <arg name="world_name" default="$(find dji_gazebo)/world/box_sphare.world"/>
+
+  <!-- Drone settings -->
+  <arg name="drone_name" default="dji_m100"/>
+  <arg name="lidar" default="true"/>
+  <arg name="lidar_name" default="veloydyne"/>
+  <arg name="realsense" default="true"/>
+  <arg name="realsense_name" default="realsense"/>
+  <arg name="set_local_pose" default="true"/>   <!-- calls set_local_pos_ref service in dji sdk -->
+
+  <!-- message_to_tf settings -->
+  <arg name="tf_prefix" default="$(optenv ROS_NAMESPACE)"/>
+  <arg name="world_frame" default="world"/>
+  <arg name="use_ground_truth_for_tf" default="true" />
+
+
+  <!-- Start gazebo and load the world -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch" >
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="headless" value="$(arg headless)"/>
+    <arg name="debug" value="$(arg debug)"/>
+    <arg name="verbose" value="$(arg verbose)"/>
+    <arg name="world_name" value="$(arg world_name)"/>
+  </include>
+
+  <!-- send the robot XML to param server -->
+  <param name="robot_description" command="$(find xacro)/xacro $(find dji_drone_description)/urdf/dji_m100_sensors.urdf.xacro
+                                            drone_name:=$(arg drone_name) lidar:=$(arg lidar) lidar_name:=$(arg lidar_name)
+                                            realsense:=$(arg realsense) realsense_name:=$(arg realsense_name)" />
+
+  <!-- Spawn the robot in Gazebo -->
+  <node pkg="gazebo_ros" type="spawn_model" name="spawn_model" args="-urdf -param /robot_description -model $(arg drone_name)" respawn="false" output="screen"/>
+
+  <!-- start robot state publisher -->
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher"/>
+
+
+  <!-- publish state and tf (message_to_tf package)-->
+  <node name="ground_truth_to_tf" pkg="message_to_tf" type="message_to_tf" output="screen">
+    <param name="odometry_topic" value="ground_truth/state" />
+    <param name="frame_id" value="$(arg world_frame)" />
+    <param name="tf_prefix" value="$(arg tf_prefix)" if="$(arg use_ground_truth_for_tf)" />
+    <param name="tf_prefix" value="$(arg tf_prefix)/ground_truth" unless="$(arg use_ground_truth_for_tf)" />
+  </node>
+
+  <!-- RViz -->
+  <arg name="rviz" default="true"/>
+  <node if="$(arg rviz)" pkg="rviz" type="rviz" name="$(anon rviz)" respawn="false" output="screen" args="-d $(find dji_gazebo)/rviz/config.rviz" />
+
+  <!-- DJI gazebo brdige -->
+  <node pkg="dji_gazebo" type="dji_gazebo_bridge" name="$(arg drone_name)_gazebo_bridge" output="screen">
+    <param name="drone_model" value="$(arg drone_name)" />
+    <param name="reference_frame" value="$(arg world_frame)" />
+    <param name="set_local_pose" value="$(arg set_local_pose)" />
+  </node>
+
+</launch>

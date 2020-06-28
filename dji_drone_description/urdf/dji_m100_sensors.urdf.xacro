@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+
+<!-- This file represents the DJI M100 drone URDF without the Gimbal.
+     Simulated Velodyne Lidar and Intel Realsense camera are also attached to the drone.
+     This is meant to enable simulating the drone in Gazebo by mimicing the model states and links of the on-board computer.
+     No dynamics is acually simulated since the actual simulation happens in the drone itself.
+-->
+
+<!--Written by Tareq Aziz ALQutami (tareqaziz2010@gmail.com) -->
+
+<!-- Dependencies: velodyne_simulator (http://wiki.ros.org/velodyne_simulator)
+                   realsense_description  -->
+
+<robot name="dji_m100" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:arg name="drone_name" default="m100"/>
+
+  <!-- Sensors -->
+  <xacro:arg name="lidar"       default="true"/>
+  <xacro:arg name="lidar_name"     default="veloydyne"/>
+  <xacro:arg name="realsense"      default="true"/>
+  <xacro:arg name="realsense_name" default="realsense"/>
+
+
+  <!-- dji m100 drone , base link is $(name)_base_link-->
+  <xacro:include filename="$(find dji_drone_description)/urdf/_dji_m100.urdf.xacro" />
+  <xacro:dji_m100  name="$(arg drone_name)">
+  </xacro:dji_m100>
+
+
+  <!-- Velodyne VLP-16 LIDAR, requires lidar_simulator package -->
+  <xacro:if value="$(arg lidar)">
+    <xacro:include filename="$(find velodyne_description)/urdf/VLP-16.urdf.xacro"/>
+    <xacro:VLP-16  parent="$(arg drone_name)_base_link" name="$(arg lidar_name)"  topic="$(arg lidar_name)/point_cloud" samples="440" gpu="false">
+      <!-- Transformation from the Mount to the LIDAR visual center -->
+      <origin xyz="0 0 0.22" rpy="0 0 0"/>
+    </xacro:VLP-16 >
+  </xacro:if>
+
+
+  <!-- Intel realsense d435 camera pointing forward, requires realsense_description package-->
+  <xacro:if value="$(arg realsense)">
+    <xacro:include filename="$(find realsense_description)/urdf/realsense_d435.urdf.xacro"/>
+    <xacro:realsense_macro parent="$(arg drone_name)_base_link" name="$(arg realsense_name)">
+      <!-- Calibration transformation from realsense camera axis to its actual pose -->
+      <origin xyz="0 0 0.065" rpy="0 0.2 0" />
+    </xacro:realsense_macro>
+  </xacro:if>
+
+
+
+</robot>

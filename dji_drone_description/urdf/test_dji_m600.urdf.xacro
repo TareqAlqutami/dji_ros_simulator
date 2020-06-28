@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+
+<robot name="m600_drone" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:arg name="drone_name" default="m600" />
+
+  <xacro:include filename="$(find dji_drone_description)/urdf/_dji_m600.urdf.xacro" />
+
+  <xacro:dji_m600  name="$(arg drone_name)">
+  </xacro:dji_m600>
+
+</robot>

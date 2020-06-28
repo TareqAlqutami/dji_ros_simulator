@@ -1,0 +1,13 @@
+<launch>
+
+    <!-- send the robot XML to param server -->
+    <param name="robot_description" command="$(find xacro)/xacro '$(find dji_drone_description)/urdf/test_dji_m100.urdf.xacro'" />
+
+    <!-- start robot state publisher -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+    <!-- RViz -->
+    <arg name="rviz" default="true"/>
+    <node  if="$(arg rviz)" name="rviz" pkg="rviz" type="rviz" args="-d $(find dji_drone_description)/rviz/m100.rviz" />
+
+</launch>
